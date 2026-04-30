@@ -1,0 +1,19 @@
+# Credenciales y secrets — NUNCA subir a GitHub
+.env
+config/service_account.json
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+env/
+
+# Datos locales
+data/
+*.db
+
+# IDE
+.vscode/
+.idea/
