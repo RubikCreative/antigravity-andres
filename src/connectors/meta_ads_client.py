@@ -23,6 +23,18 @@ from loguru import logger
 
 load_dotenv()
 
+
+def _get_secret(key: str, default: str | None = None) -> str | None:
+    """Lee un secret de Streamlit Cloud o del entorno local."""
+    try:
+        import streamlit as st
+        val = st.secrets.get(key)
+        if val:
+            return val
+    except Exception:
+        pass
+    return os.getenv(key, default)
+
 # Campos que traemos de la API — agregar aquí si se necesitan más
 AD_INSIGHT_FIELDS = [
     "campaign_id",
@@ -60,8 +72,8 @@ class MetaAdsClient:
         access_token: str | None = None,
         ad_account_id: str | None = None,
     ):
-        self.access_token = access_token or os.getenv("META_ACCESS_TOKEN")
-        self.ad_account_id = ad_account_id or os.getenv("META_AD_ACCOUNT_ID")
+        self.access_token = access_token or _get_secret("META_ACCESS_TOKEN")
+        self.ad_account_id = ad_account_id or _get_secret("META_AD_ACCOUNT_ID")
         self._initialized = False
 
     # ------------------------------------------------------------------
@@ -242,7 +254,7 @@ class MetaAdsClient:
         Retorna todas las cuentas publicitarias del Business Manager.
         Requiere META_BUSINESS_ID en .env.
         """
-        business_id = os.getenv("META_BUSINESS_ID")
+        business_id = _get_secret("META_BUSINESS_ID")
         if not business_id:
             raise ValueError("META_BUSINESS_ID no configurado en .env")
 

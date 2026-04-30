@@ -24,6 +24,18 @@ load_dotenv()
 
 import os
 
+
+def _get_secret(key: str, default: str | None = None) -> str | None:
+    """Lee un secret de Streamlit Cloud o del entorno local."""
+    try:
+        import streamlit as st
+        val = st.secrets.get(key)
+        if val:
+            return val
+    except Exception:
+        pass
+    return os.getenv(key, default)
+
 SCOPES = [
     "https://www.googleapis.com/auth/spreadsheets.readonly",
     "https://www.googleapis.com/auth/drive.readonly",
@@ -39,9 +51,9 @@ class SheetsClient:
         spreadsheet_id: str | None = None,
         sheet_name: str | None = None,
     ):
-        self.credentials_path = credentials_path or os.getenv("GOOGLE_CREDENTIALS_PATH")
-        self.spreadsheet_id = spreadsheet_id or os.getenv("SPREADSHEET_ID")
-        self.sheet_name = sheet_name or os.getenv("SHEET_NAME", "Ventas")
+        self.credentials_path = credentials_path or _get_secret("GOOGLE_CREDENTIALS_PATH")
+        self.spreadsheet_id = spreadsheet_id or _get_secret("SPREADSHEET_ID")
+        self.sheet_name = sheet_name or _get_secret("SHEET_NAME") or "Ventas"
         self._client: gspread.Client | None = None
 
     # ------------------------------------------------------------------
@@ -50,9 +62,21 @@ class SheetsClient:
 
     def _get_client(self) -> gspread.Client:
         if self._client is None:
-            creds_json = os.getenv("GOOGLE_CREDENTIALS_JSON")
+            import json
+
+            # 1. Streamlit Cloud secrets
+            creds_json = None
+            try:
+                import streamlit as st
+                creds_json = st.secrets.get("GOOGLE_CREDENTIALS_JSON")
+            except Exception:
+                pass
+
+            # 2. Variable de entorno local (.env)
+            if not creds_json:
+                creds_json = os.getenv("GOOGLE_CREDENTIALS_JSON")
+
             if creds_json:
-                import json
                 creds = Credentials.from_service_account_info(
                     json.loads(creds_json), scopes=SCOPES
                 )
