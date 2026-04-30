@@ -16,7 +16,6 @@ from datetime import datetime, timedelta, timezone
 import pandas as pd
 from dotenv import load_dotenv
 from facebook_business.adobjects.adaccount import AdAccount
-from facebook_business.adobjects.adreportrun import AdReportRun
 from facebook_business.adobjects.business import Business
 from facebook_business.api import FacebookAdsApi
 from loguru import logger
@@ -28,9 +27,14 @@ def _get_secret(key: str, default: str | None = None) -> str | None:
     """Lee un secret de Streamlit Cloud o del entorno local."""
     try:
         import streamlit as st
-        val = st.secrets.get(key)
-        if val:
-            return val
+        _secrets_paths = [
+            os.path.expanduser("~/.streamlit/secrets.toml"),
+            os.path.join(os.getcwd(), ".streamlit", "secrets.toml"),
+        ]
+        if any(os.path.exists(p) for p in _secrets_paths):
+            val = st.secrets.get(key)
+            if val:
+                return val
     except Exception:
         pass
     return os.getenv(key, default)

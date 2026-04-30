@@ -29,15 +29,20 @@ def _get_secret(key: str, default: str | None = None) -> str | None:
     """Lee un secret de Streamlit Cloud o del entorno local."""
     try:
         import streamlit as st
-        val = st.secrets.get(key)
-        if val:
-            return val
+        _secrets_paths = [
+            os.path.expanduser("~/.streamlit/secrets.toml"),
+            os.path.join(os.getcwd(), ".streamlit", "secrets.toml"),
+        ]
+        if any(os.path.exists(p) for p in _secrets_paths):
+            val = st.secrets.get(key)
+            if val:
+                return val
     except Exception:
         pass
     return os.getenv(key, default)
 
 SCOPES = [
-    "https://www.googleapis.com/auth/spreadsheets.readonly",
+    "https://www.googleapis.com/auth/spreadsheets",
     "https://www.googleapis.com/auth/drive.readonly",
 ]
 
@@ -299,3 +304,51 @@ class SheetsClient:
 
         logger.success(f"Ingesta completa: {len(df)} filas nuevas listas para ETL.")
         return df.reset_index(drop=True)
+
+    # ------------------------------------------------------------------
+    # Configuración persistente (pestaña "Config")
+    # ------------------------------------------------------------------
+
+    def get_config(self, config_sheet: str = "Config") -> dict:
+        """Lee pares clave-valor de la pestaña Config."""
+        client = self._get_client()
+        try:
+            sheet = client.open_by_key(self.spreadsheet_id).worksheet(config_sheet)
+            rows = sheet.get_all_values()
+            if not rows:
+                return {}
+            # Salta la fila de encabezado si existe (key / value)
+            data_rows = rows[1:] if rows[0][:2] == ["key", "value"] else rows
+            return {r[0]: r[1] for r in data_rows if len(r) >= 2 and r[0]}
+        except Exception as e:
+            logger.warning(f"No se pudo leer Config: {e}")
+            return {}
+
+    def set_config(self, key: str, value, config_sheet: str = "Config") -> None:
+        """Escribe o actualiza un par clave-valor en la pestaña Config."""
+        client = self._get_client()
+        sheet = client.open_by_key(self.spreadsheet_id).worksheet(config_sheet)
+        rows = sheet.get_all_values()
+
+        if not rows:
+            sheet.update("A1:B1", [["key", "value"]])
+            sheet.append_row([str(key), str(value)])
+            return
+
+        # Determinar si la primera fila es encabezado
+        header_offset = 1 if rows[0][:2] == ["key", "value"] else 0
+        data_rows = rows[header_offset:]
+
+        for i, row in enumerate(data_rows, start=header_offset + 1):
+            if row and row[0] == str(key):
+                sheet.update([[str(value)]], f"B{i}")
+                logger.debug(f"Config actualizada: {key} = {value}")
+                return
+
+        # Clave nueva → agregar fila
+        if header_offset == 0:
+            sheet.update([["key", "value"]], "A1:B1")
+            sheet.append_row([str(key), str(value)])
+        else:
+            sheet.append_row([str(key), str(value)])
+        logger.debug(f"Config creada: {key} = {value}")
