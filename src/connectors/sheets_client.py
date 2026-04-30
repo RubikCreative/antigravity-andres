@@ -50,14 +50,21 @@ class SheetsClient:
 
     def _get_client(self) -> gspread.Client:
         if self._client is None:
-            if not self.credentials_path or not os.path.exists(self.credentials_path):
+            creds_json = os.getenv("GOOGLE_CREDENTIALS_JSON")
+            if creds_json:
+                import json
+                creds = Credentials.from_service_account_info(
+                    json.loads(creds_json), scopes=SCOPES
+                )
+            elif self.credentials_path and os.path.exists(self.credentials_path):
+                creds = Credentials.from_service_account_file(
+                    self.credentials_path, scopes=SCOPES
+                )
+            else:
                 raise FileNotFoundError(
                     f"Service account JSON no encontrado en: {self.credentials_path}\n"
-                    "Descárgalo desde Google Cloud Console → IAM → Cuentas de servicio."
+                    "Configura GOOGLE_CREDENTIALS_JSON en los secrets de Streamlit Cloud."
                 )
-            creds = Credentials.from_service_account_file(
-                self.credentials_path, scopes=SCOPES
-            )
             self._client = gspread.authorize(creds)
             logger.info("Autenticación con Google Sheets exitosa.")
         return self._client
