@@ -1,13 +1,9 @@
-gspread==6.1.2
-google-auth==2.29.0
-pandas==2.2.2
-python-dotenv==1.0.1
-sqlalchemy==2.0.30
-loguru==0.7.2
-
-# Meta Ads (próximo módulo)
-facebook-business==20.0.2
-
-# Dashboard
-streamlit==1.35.0
-plotly==5.22.0
+gspread>=6.1.2
+google-auth>=2.29.0
+pandas>=2.2.2
+python-dotenv>=1.0.1
+sqlalchemy>=2.0.30
+loguru>=0.7.2
+facebook-business>=20.0.2
+streamlit>=1.35.0
+plotly>=5.22.0
