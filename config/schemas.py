@@ -41,7 +41,7 @@ SCHEMA_SALES = {
 }
 
 # Columnas mínimas requeridas para que una fila sea válida
-REQUIRED_COLUMNS = {"ad_id", "valor_venta", "chip"}
+REQUIRED_COLUMNS = {"valor_venta"}
 
 # Schema de Meta Ads (referencia)
 SCHEMA_META_ADS = {
