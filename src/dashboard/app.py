@@ -261,9 +261,22 @@ with st.sidebar:
     data = load_data(days_back, selected_account_id)
     fact = data["fact"].copy()
 
+    # Si no hay datos para el período seleccionado, ampliar automáticamente
+    _days_used = days_back
+    if fact.empty or "campaign_name" not in fact.columns:
+        for _fallback in [30, 60, 90]:
+            if _fallback <= days_back:
+                continue
+            data = load_data(_fallback, selected_account_id)
+            fact = data["fact"].copy()
+            if not fact.empty and "campaign_name" in fact.columns:
+                _days_used = _fallback
+                st.toast(f"Sin datos en {days_back} días — mostrando últimos {_fallback} días disponibles", icon="ℹ️")
+                break
+
     if fact.empty or "campaign_name" not in fact.columns:
         st.markdown('<div class="dash-title"><i class="fa-solid fa-rocket"></i>ANTIGRAVITY</div>', unsafe_allow_html=True)
-        st.warning(f"La cuenta **{selected_account_name}** no tiene datos de Meta Ads para los últimos {days_back} días. Prueba con otro período o selecciona otra cuenta.")
+        st.warning(f"La cuenta **{selected_account_name}** no tiene datos de Meta Ads disponibles. Prueba seleccionando otra cuenta.")
         st.stop()
 
     st.markdown("### Filtros")
