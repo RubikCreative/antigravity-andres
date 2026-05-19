@@ -256,8 +256,8 @@ class SheetsClient:
         key_cols = ["ad_id", "telefono", "timestamp_venta", "valor_venta"]
         available = [c for c in key_cols if c in df.columns]
 
-        df["source_row_id"] = df[available].astype(str).apply(
-            lambda row: hashlib.md5("_".join(row.values).encode()).hexdigest(),
+        df["source_row_id"] = df[available].apply(
+            lambda row: hashlib.md5("_".join(str(v) for v in row.values).encode()).hexdigest(),
             axis=1,
         )
         return df
