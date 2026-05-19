@@ -5,16 +5,27 @@ Modifica aquí si el nombre de columnas en el Sheet cambia.
 
 # Mapa: nombre de columna en el Sheet → nombre interno del sistema
 SHEETS_COLUMN_MAP = {
-    "nombre":      "nombre",
-    "teléfono":    "telefono",
-    "telefono":    "telefono",
-    "chip":        "chip",
-    "ad_id":       "ad_id",
-    "id ad":       "ad_id",       # variante real del sheet
-    "valor_venta": "valor_venta",
-    "valor":       "valor_venta", # variante real del sheet
-    "timestamp":   "timestamp_venta",
-    "data":        "timestamp_venta", # variante real del sheet
+    # Columnas originales
+    "nombre":               "nombre",
+    "teléfono":             "telefono",
+    "telefono":             "telefono",
+    "chip":                 "chip",
+    "ad_id":                "ad_id",
+    "id ad":                "ad_id",
+    "valor_venta":          "valor_venta",
+    "valor":                "valor_venta",
+    "timestamp":            "timestamp_venta",
+    "data":                 "timestamp_venta",
+    # Variantes (Andres y otros clientes)
+    "numero de telefono":   "telefono",
+    "número de teléfono":   "telefono",
+    "valor de la venta":    "valor_venta",
+    "fecha de compra":      "timestamp_venta",
+    "fecha":                "timestamp_venta",
+    "anuncio de origen":    "ad_id",
+    "post id":              "ad_id",
+    "whatsapp origen":      "chip",
+    "whatsapp":             "chip",
 }
 
 # Tipos finales luego de normalización
